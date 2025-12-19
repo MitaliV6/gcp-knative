@@ -1,81 +1,33 @@
-ingress:
-  enabled: false
-  # Ingress disabled - using LoadBalancer service instead
-  hosts: []
-  pathType: Prefix
-  path: /
-  annotations: {}
-
 replicas: 1
 
-assertNoLeakedSecrets: false
-
-  
-resources: 
-  limits:
-    cpu: 500m
-    memory: 1024Mi
-  requests:
-    cpu: 100m
-    memory: 512Mi
-
-# Define FrontendConfig for Ingress (disabled)
-frontendConfig:
-  enabled: false
-
-# Define mcrt for gcp Ingress (disabled)
-managedCertificate:
+ingress:
   enabled: false
 
 service:
   enabled: true
   type: LoadBalancer
-  # LoadBalancer will get an external IP from GCP
   annotations: {}
-
-useStatefulSet: false
 
 persistence:
   enabled: false
-  size: 10Gi
-  accessModes:
-    - ReadWriteOnce
 
-dashboards: {}
+resources:
+  requests:
+    cpu: 25m
+    memory: 128Mi
+  limits:
+    cpu: 100m
+    memory: 256Mi
 
-# Administrator credentials when not using an existing secret (see below)
 adminUser: admin
-adminPassword: jO7ysCLXJoP024v8
+adminPassword: admin
 
 grafana.ini:
-  paths:
-    data: /var/lib/grafana/
-    logs: /var/log/grafana
-    plugins: /var/lib/grafana/plugins
-    provisioning: /etc/grafana/provisioning
   analytics:
     check_for_updates: false
   log:
     mode: console
-  grafana_net:
-    url: ""
   server:
-    # root_url will be set automatically based on LoadBalancer IP
     root_url: "%(protocol)s://%(domain)s:%(http_port)s/"
-    domain: ""
-  auth.google:
-    enabled : false
-    allow_sign_up : true
-    auto_login : false
-    client_id : 
-    client_secret : 
-    scopes : "openid email profile"
-    auth_url: https://accounts.google.com/o/oauth2/v2/auth
-    token_url: https://oauth2.googleapis.com/token
-    api_url: https://openidconnect.googleapis.com/v1/userinfo
-    allowed_domains: 
-    hosted_domain: 
-    use_pkce: true
 
-plugins:
-  - grafana-exploretraces-app
+plugins: []
