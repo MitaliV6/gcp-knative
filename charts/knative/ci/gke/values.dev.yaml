@@ -15,20 +15,23 @@ serving:
     labels:
       environment: dev
       team: platform
-    annotations:
-      # Development-specific annotations
-      autoscaling.knative.dev/minScale: "0"
-      autoscaling.knative.dev/maxScale: "5"
-      autoscaling.knative.dev/target: "50"
-    
+    annotations: {}  # keep empty; autoscaling annotations go under template.metadata.annotations
+
     # Service spec
     template:
       metadata:
         labels:
           environment: dev
           version: dev
-        annotations: {}
+        annotations:
+          # Development-specific autoscaling annotations
+          autoscaling.knative.dev/minScale: "0"
+          autoscaling.knative.dev/maxScale: "5"
+          autoscaling.knative.dev/target: "50"
       spec:
+        containerConcurrency: 10  # Lower concurrency for dev
+        timeoutSeconds: 300
+
         containers:
           - name: user-container
             image: gcr.io/knative-samples/helloworld-go:latest
@@ -53,17 +56,11 @@ serving:
                 path: /
                 port: 8080
               initialDelaySeconds: 0
-              timeoutSeconds: 1
             readinessProbe:
               httpGet:
                 path: /
                 port: 8080
               initialDelaySeconds: 0
-              timeoutSeconds: 1
-        
-        # Autoscaling configuration for dev
-        containerConcurrency: 10  # Lower concurrency for dev
-        timeoutSeconds: 300
     
     # Traffic configuration
     traffic:
@@ -105,16 +102,13 @@ eventing:
     container:
       enabled: false
 
-# Autoscaling configuration for development
+# Autoscaling configuration for development (chart-level, not Knative annotations)
 autoscaling:
   enabled: true
   minScale: 0  # Scale to zero in dev
   maxScale: 5  # Lower max scale for dev
   target: 50   # Lower target concurrency for dev
-  annotations:
-    autoscaling.knative.dev/minScale: "0"
-    autoscaling.knative.dev/maxScale: "5"
-    autoscaling.knative.dev/target: "50"
+  annotations: {}  # leave empty; Knative annotations handled above
 
 # Service Account
 serviceAccount:
