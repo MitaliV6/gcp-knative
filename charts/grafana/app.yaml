@@ -10,7 +10,7 @@ spec:
   project: default
   source:
     path: charts/grafana
-    repoURL: https://github.com/snagfilms/helm-charts.git
+    repoURL: https://github.com/MitaliV6/gcp-knative.git
     targetRevision: main
     helm:
         valueFiles:
