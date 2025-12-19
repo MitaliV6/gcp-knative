@@ -1,0 +1,9 @@
+- op: replace
+  path: "/spec/source/helm/valueFiles/0"
+  value: "ci/gke/values.dev.yaml"
+- op: replace
+  path: "/spec/source/targetRevision"
+  value: "main"
+- op: add
+  path: "/spec/syncPolicy/automated"
+  value: {}

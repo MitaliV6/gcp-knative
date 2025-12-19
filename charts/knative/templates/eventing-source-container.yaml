@@ -1,0 +1,45 @@
+{{- if .Values.eventing.enabled }}
+{{- if .Values.eventing.source.container.enabled }}
+apiVersion: sources.knative.dev/v1
+kind: ContainerSource
+metadata:
+  name: {{ .Values.eventing.source.container.name | default (printf "%s-container-source" (include "knative.fullname" .)) }}
+  namespace: {{ include "knative.namespace" . }}
+  {{- with .Values.eventing.source.container.labels }}
+  labels:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .Values.eventing.source.container.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  template:
+    spec:
+      {{- if .Values.serviceAccount.create }}
+      serviceAccountName: {{ include "knative.serviceAccountName" . }}
+      {{- end }}
+      containers:
+        {{- range .Values.eventing.source.container.template.spec.containers }}
+        - name: {{ .name }}
+          image: {{ .image }}
+          {{- if .args }}
+          args:
+            {{- toYaml .args | nindent 12 }}
+          {{- end }}
+          {{- if .env }}
+          env:
+            {{- toYaml .env | nindent 12 }}
+          {{- end }}
+        {{- end }}
+  sink:
+    {{- if .Values.eventing.source.container.sink.ref }}
+    ref:
+      {{- toYaml .Values.eventing.source.container.sink.ref | nindent 6 }}
+    {{- end }}
+    {{- if .Values.eventing.source.container.sink.uri }}
+    uri: {{ .Values.eventing.source.container.sink.uri }}
+    {{- end }}
+{{- end }}
+{{- end }}
+

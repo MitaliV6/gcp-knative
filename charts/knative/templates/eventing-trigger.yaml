@@ -1,0 +1,37 @@
+{{- if .Values.eventing.enabled }}
+{{- if .Values.eventing.trigger.enabled }}
+apiVersion: eventing.knative.dev/v1
+kind: Trigger
+metadata:
+  name: {{ .Values.eventing.trigger.name | default (printf "%s-trigger" (include "knative.fullname" .)) }}
+  namespace: {{ include "knative.namespace" . }}
+  {{- with .Values.eventing.trigger.labels }}
+  labels:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .Values.eventing.trigger.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  broker: {{ .Values.eventing.trigger.broker }}
+  {{- if .Values.eventing.trigger.spec.filter }}
+  filter:
+    {{- if .Values.eventing.trigger.spec.filter.attributes }}
+    attributes:
+      {{- toYaml .Values.eventing.trigger.spec.filter.attributes | nindent 6 }}
+    {{- end }}
+  {{- end }}
+  {{- if .Values.eventing.trigger.spec.subscriber }}
+  subscriber:
+    {{- if .Values.eventing.trigger.spec.subscriber.ref }}
+    ref:
+      {{- toYaml .Values.eventing.trigger.spec.subscriber.ref | nindent 6 }}
+    {{- end }}
+    {{- if .Values.eventing.trigger.spec.subscriber.uri }}
+    uri: {{ .Values.eventing.trigger.spec.subscriber.uri }}
+    {{- end }}
+  {{- end }}
+{{- end }}
+{{- end }}
+

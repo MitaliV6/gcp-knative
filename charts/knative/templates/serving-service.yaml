@@ -1,0 +1,87 @@
+{{- if .Values.serving.enabled }}
+{{- if .Values.serving.service.enabled }}
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: {{ .Values.serving.service.name | default (include "knative.fullname" .) }}
+  namespace: {{ include "knative.namespace" . }}
+  {{- with .Values.serving.service.labels }}
+  labels:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .Values.serving.service.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- if .Values.autoscaling.enabled }}
+    {{- range $key, $value := .Values.autoscaling.annotations }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
+  {{- end }}
+spec:
+  template:
+    metadata:
+      {{- with .Values.serving.service.template.metadata.labels }}
+      labels:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.serving.service.template.metadata.annotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    spec:
+      {{- if .Values.serviceAccount.create }}
+      serviceAccountName: {{ include "knative.serviceAccountName" . }}
+      {{- end }}
+      {{- if .Values.serving.service.template.spec.containerConcurrency }}
+      containerConcurrency: {{ .Values.serving.service.template.spec.containerConcurrency }}
+      {{- end }}
+      {{- if .Values.serving.service.template.spec.timeoutSeconds }}
+      timeoutSeconds: {{ .Values.serving.service.template.spec.timeoutSeconds }}
+      {{- end }}
+      containers:
+        {{- range .Values.serving.service.template.spec.containers }}
+        - name: {{ .name }}
+          image: {{ .image }}
+          {{- if .ports }}
+          ports:
+            {{- toYaml .ports | nindent 12 }}
+          {{- end }}
+          {{- if .env }}
+          env:
+            {{- toYaml .env | nindent 12 }}
+          {{- end }}
+          {{- if .resources }}
+          resources:
+            {{- toYaml .resources | nindent 12 }}
+          {{- end }}
+          {{- if .livenessProbe }}
+          livenessProbe:
+            {{- toYaml .livenessProbe | nindent 12 }}
+          {{- end }}
+          {{- if .readinessProbe }}
+          readinessProbe:
+            {{- toYaml .readinessProbe | nindent 12 }}
+          {{- end }}
+        {{- end }}
+  {{- if .Values.serving.service.traffic }}
+  traffic:
+    {{- range .Values.serving.service.traffic }}
+    - {{- if .revisionName }}
+      revisionName: {{ .revisionName }}
+      {{- end }}
+      {{- if .latestRevision }}
+      latestRevision: {{ .latestRevision }}
+      {{- end }}
+      percent: {{ .percent }}
+      {{- if .tag }}
+      tag: {{ .tag }}
+      {{- end }}
+    {{- end }}
+  {{- end }}
+  {{- if .Values.serving.service.visibility }}
+  visibility: {{ .Values.serving.service.visibility }}
+  {{- end }}
+{{- end }}
+{{- end }}
+

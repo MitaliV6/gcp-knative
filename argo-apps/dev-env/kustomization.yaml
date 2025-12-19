@@ -1,0 +1,12 @@
+---
+# Define all resources for the environment in a concise list
+resources:
+  # Application Microservices
+  - ../../charts/grafana
+  - ../../charts/knative
+  
+
+# Use environment specific CI values
+patches:
+  - path: ./patches/ci-patch.yaml
+    target: { kind: Application }

@@ -1,0 +1,86 @@
+ingress:
+  enabled: true
+  hosts:
+    - "YOURDOMAIN.com"
+  pathType: Prefix
+  path: /
+  annotations:
+    kubernetes.io/ingress.class: "gce"
+    kubernetes.io/ingress.allow-http: "true"
+    networking.gke.io/managed-certificates: "grafana-staging"
+    networking.gke.io/v1beta1.FrontendConfig: grafana-staging
+
+replicas: 1
+
+assertNoLeakedSecrets: false
+
+nodeSelector:
+  machine-type: c3-standard-8
+  
+resources: 
+  limits:
+    cpu: 500m
+    memory: 1024Mi
+  requests:
+    cpu: 100m
+    memory: 512Mi
+
+# Define FrontendConfig for Ingress
+frontendConfig:
+  enabled: true
+  name: grafana-staging
+
+# Define mcrt for gcp Ingress
+managedCertificate:
+  enabled: true
+  name: grafana-staging
+  domains:
+    - YOURDOMAIN.com
+service:
+  type: NodePort
+
+useStatefulSet: false
+
+persistence:
+  enabled: true
+  size: 10Gi
+  accessModes:
+    - ReadWriteOnce
+
+dashboards: {}
+
+# Administrator credentials when not using an existing secret (see below)
+adminUser: admin
+adminPassword: jO7ysCLXJoP024v835X
+
+grafana.ini:
+  paths:
+    data: /var/lib/grafana/
+    logs: /var/log/grafana
+    plugins: /var/lib/grafana/plugins
+    provisioning: /etc/grafana/provisioning
+  analytics:
+    check_for_updates: false
+  log:
+    mode: console
+  grafana_net:
+    url: YOURDOMAIN.com
+  server:
+    root_url: https://YOURDOMAIN.com/
+    domain: "{{ if (and .Values.ingress.enabled .Values.ingress.hosts) }}{{ tpl (.Values.ingress.hosts | first) . }}{{ else }}''{{ end }}"
+  auth.google:
+    enabled : true
+    allow_sign_up : true
+    auto_login : false
+    client_id : 
+    client_secret : 
+    scopes : "openid email profile"
+    auth_url: https://accounts.google.com/o/oauth2/v2/auth
+    token_url: https://oauth2.googleapis.com/token
+    api_url: https://openidconnect.googleapis.com/v1/userinfo
+    allowed_domains: 
+    hosted_domain: 
+    use_pkce: true
+
+plugins:
+  - grafana-exploretraces-app

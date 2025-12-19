@@ -1,0 +1,33 @@
+{{- if .Values.eventing.enabled }}
+{{- if .Values.eventing.source.apiserver.enabled }}
+apiVersion: sources.knative.dev/v1
+kind: ApiServerSource
+metadata:
+  name: {{ .Values.eventing.source.apiserver.name | default (printf "%s-apiserver-source" (include "knative.fullname" .)) }}
+  namespace: {{ include "knative.namespace" . }}
+  {{- with .Values.eventing.source.apiserver.labels }}
+  labels:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .Values.eventing.source.apiserver.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  mode: {{ .Values.eventing.source.apiserver.mode }}
+  {{- if .Values.eventing.source.apiserver.serviceAccountName }}
+  serviceAccountName: {{ .Values.eventing.source.apiserver.serviceAccountName }}
+  {{- end }}
+  resources:
+    {{- toYaml .Values.eventing.source.apiserver.resources | nindent 4 }}
+  sink:
+    {{- if .Values.eventing.source.apiserver.sink.ref }}
+    ref:
+      {{- toYaml .Values.eventing.source.apiserver.sink.ref | nindent 6 }}
+    {{- end }}
+    {{- if .Values.eventing.source.apiserver.sink.uri }}
+    uri: {{ .Values.eventing.source.apiserver.sink.uri }}
+    {{- end }}
+{{- end }}
+{{- end }}
+

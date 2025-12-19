@@ -1,0 +1,23 @@
+{{- if .Values.eventing.enabled }}
+{{- if .Values.eventing.broker.enabled }}
+apiVersion: eventing.knative.dev/v1
+kind: Broker
+metadata:
+  name: {{ .Values.eventing.broker.name }}
+  namespace: {{ include "knative.namespace" . }}
+  {{- with .Values.eventing.broker.labels }}
+  labels:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .Values.eventing.broker.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- if .Values.eventing.broker.spec.config }}
+  config:
+    {{- toYaml .Values.eventing.broker.spec.config | nindent 4 }}
+  {{- end }}
+{{- end }}
+{{- end }}
+

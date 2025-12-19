@@ -1,0 +1,32 @@
+1. Get the application URL by running these commands:
+{{- if .Values.serving.enabled }}
+{{- if .Values.serving.service.enabled }}
+  kubectl get ksvc {{ .Values.serving.service.name | default (include "knative.fullname" .) }} -n {{ include "knative.namespace" . }}
+{{- end }}
+{{- end }}
+
+2. Access your application:
+{{- if .Values.serving.enabled }}
+{{- if .Values.serving.service.enabled }}
+  The Knative Service is available at:
+  {{- if eq .Values.serving.service.visibility "cluster-local" }}
+    (Cluster-local only - not accessible from outside the cluster)
+  {{- else }}
+    http://{{ .Values.serving.service.name | default (include "knative.fullname" .) }}.{{ include "knative.namespace" . }}.svc.cluster.local
+  {{- end }}
+{{- end }}
+{{- end }}
+
+3. Check the status:
+  kubectl get all -n {{ include "knative.namespace" . }}
+
+{{- if .Values.eventing.enabled }}
+4. Eventing resources:
+{{- if .Values.eventing.broker.enabled }}
+  Broker: kubectl get broker {{ .Values.eventing.broker.name }} -n {{ include "knative.namespace" . }}
+{{- end }}
+{{- if .Values.eventing.trigger.enabled }}
+  Trigger: kubectl get trigger {{ .Values.eventing.trigger.name | default (printf "%s-trigger" (include "knative.fullname" .)) }} -n {{ include "knative.namespace" . }}
+{{- end }}
+{{- end }}
+

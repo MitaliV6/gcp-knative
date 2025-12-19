@@ -1,0 +1,233 @@
+# Default values for knative chart
+
+# Global settings
+global:
+  imageRegistry: ""
+  imagePullSecrets: []
+
+# Namespace where resources will be deployed
+namespace: default
+
+# Knative Serving Configuration
+serving:
+  enabled: true
+  
+  # Service configuration
+  service:
+    enabled: true
+    name: knative-service
+    # Service metadata
+    labels: {}
+    annotations: {}
+    
+    # Service spec
+    template:
+      metadata:
+        labels: {}
+        annotations: {}
+      spec:
+        containers:
+          - name: user-container
+            image: gcr.io/knative-samples/helloworld-go:latest
+            ports:
+              - containerPort: 8080
+                protocol: TCP
+            env: []
+            resources:
+              limits:
+                cpu: 1000m
+                memory: 512Mi
+              requests:
+                cpu: 100m
+                memory: 128Mi
+            livenessProbe:
+              httpGet:
+                path: /
+                port: 8080
+              initialDelaySeconds: 0
+              timeoutSeconds: 1
+            readinessProbe:
+              httpGet:
+                path: /
+                port: 8080
+              initialDelaySeconds: 0
+              timeoutSeconds: 1
+        
+        # Autoscaling configuration
+        containerConcurrency: 0  # 0 means unlimited
+        timeoutSeconds: 300
+    
+    # Traffic configuration
+    traffic:
+      - revisionName: ""
+        percent: 100
+        latestRevision: true
+        tag: ""
+    
+    # Visibility configuration
+    visibility: ""  # cluster-local or empty for public
+
+  # Route configuration (optional, separate from Service)
+  route:
+    enabled: false
+    name: knative-route
+    labels: {}
+    annotations: {}
+    spec:
+      traffic:
+        - revisionName: ""
+          percent: 100
+          tag: ""
+
+  # Configuration (optional, separate from Service)
+  configuration:
+    enabled: false
+    name: knative-configuration
+    labels: {}
+    annotations: {}
+    spec:
+      template:
+        metadata:
+          labels: {}
+          annotations: {}
+        spec:
+          containers:
+            - name: user-container
+              image: gcr.io/knative-samples/helloworld-go:latest
+              ports:
+                - containerPort: 8080
+              env: []
+
+# Knative Eventing Configuration
+eventing:
+  enabled: false
+  
+  # Broker configuration
+  broker:
+    enabled: false
+    name: default
+    labels: {}
+    annotations: {}
+    spec:
+      config:
+        apiVersion: v1
+        kind: ConfigMap
+        name: kafka-broker-config
+        namespace: knative-eventing
+      # For Kafka broker
+      # config:
+      #   apiVersion: v1
+      #   kind: ConfigMap
+      #   name: kafka-broker-config
+      #   namespace: knative-eventing
+  
+  # Trigger configuration
+  trigger:
+    enabled: false
+    name: knative-trigger
+    labels: {}
+    annotations: {}
+    broker: default
+    spec:
+      filter:
+        attributes:
+          type: ""
+          source: ""
+      subscriber:
+        ref:
+          apiVersion: serving.knative.dev/v1
+          kind: Service
+          name: ""
+        uri: ""
+
+  # Source configurations
+  source:
+    # PingSource
+    ping:
+      enabled: false
+      name: knative-ping-source
+      labels: {}
+      annotations: {}
+      schedule: "*/1 * * * *"  # Cron schedule
+      data: '{"message": "Hello from PingSource"}'
+      sink:
+        ref:
+          apiVersion: serving.knative.dev/v1
+          kind: Service
+          name: ""
+    
+    # ApiServerSource
+    apiserver:
+      enabled: false
+      name: knative-apiserver-source
+      labels: {}
+      annotations: {}
+      mode: Reference
+      serviceAccountName: ""
+      resources:
+        - apiVersion: v1
+          kind: Event
+      sink:
+        ref:
+          apiVersion: serving.knative.dev/v1
+          kind: Service
+          name: ""
+    
+    # ContainerSource
+    container:
+      enabled: false
+      name: knative-container-source
+      labels: {}
+      annotations: {}
+      template:
+        spec:
+          containers:
+            - name: heartbeats
+              image: gcr.io/knative-releases/knative.dev/eventing/cmd/heartbeats:latest
+              args:
+                - --period=1
+              env:
+                - name: POD_NAME
+                  valueFrom:
+                    fieldRef:
+                      fieldPath: metadata.name
+                - name: POD_NAMESPACE
+                  valueFrom:
+                    fieldRef:
+                      fieldPath: metadata.namespace
+      sink:
+        ref:
+          apiVersion: serving.knative.dev/v1
+          kind: Service
+          name: ""
+
+# Autoscaling configuration (applies to Serving)
+autoscaling:
+  enabled: true
+  minScale: 0
+  maxScale: 10
+  target: 100  # Target concurrency
+  annotations:
+    autoscaling.knative.dev/minScale: "0"
+    autoscaling.knative.dev/maxScale: "10"
+    autoscaling.knative.dev/target: "100"
+
+# Service Account
+serviceAccount:
+  create: true
+  name: ""
+  annotations: {}
+  labels: {}
+
+# Pod Disruption Budget
+podDisruptionBudget:
+  enabled: false
+  minAvailable: 1
+  maxUnavailable: ""
+
+# Network Policy
+networkPolicy:
+  enabled: false
+  ingress: []
+  egress: []
+

@@ -1,0 +1,34 @@
+{{- if .Values.serving.enabled }}
+{{- if .Values.serving.route.enabled }}
+apiVersion: serving.knative.dev/v1
+kind: Route
+metadata:
+  name: {{ .Values.serving.route.name | default (printf "%s-route" (include "knative.fullname" .)) }}
+  namespace: {{ include "knative.namespace" . }}
+  {{- with .Values.serving.route.labels }}
+  labels:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .Values.serving.route.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- if .Values.serving.route.spec.traffic }}
+  traffic:
+    {{- range .Values.serving.route.spec.traffic }}
+    - {{- if .revisionName }}
+      revisionName: {{ .revisionName }}
+      {{- end }}
+      {{- if .latestRevision }}
+      latestRevision: {{ .latestRevision }}
+      {{- end }}
+      percent: {{ .percent }}
+      {{- if .tag }}
+      tag: {{ .tag }}
+      {{- end }}
+    {{- end }}
+  {{- end }}
+{{- end }}
+{{- end }}
+

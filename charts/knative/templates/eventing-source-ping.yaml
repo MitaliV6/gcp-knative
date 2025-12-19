@@ -1,0 +1,31 @@
+{{- if .Values.eventing.enabled }}
+{{- if .Values.eventing.source.ping.enabled }}
+apiVersion: sources.knative.dev/v1
+kind: PingSource
+metadata:
+  name: {{ .Values.eventing.source.ping.name | default (printf "%s-ping-source" (include "knative.fullname" .)) }}
+  namespace: {{ include "knative.namespace" . }}
+  {{- with .Values.eventing.source.ping.labels }}
+  labels:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .Values.eventing.source.ping.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  schedule: {{ .Values.eventing.source.ping.schedule }}
+  {{- if .Values.eventing.source.ping.data }}
+  data: {{ .Values.eventing.source.ping.data | quote }}
+  {{- end }}
+  sink:
+    {{- if .Values.eventing.source.ping.sink.ref }}
+    ref:
+      {{- toYaml .Values.eventing.source.ping.sink.ref | nindent 6 }}
+    {{- end }}
+    {{- if .Values.eventing.source.ping.sink.uri }}
+    uri: {{ .Values.eventing.source.ping.sink.uri }}
+    {{- end }}
+{{- end }}
+{{- end }}
+
