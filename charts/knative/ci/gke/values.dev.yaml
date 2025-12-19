@@ -6,42 +6,36 @@ serving:
   service:
     enabled: true
     name: knative-service-dev
-    labels:
-      environment: dev
+
     annotations: {}
 
     template:
       metadata:
-        labels:
-          environment: dev
         annotations:
           autoscaling.knative.dev/minScale: "0"
           autoscaling.knative.dev/maxScale: "1"
-          autoscaling.knative.dev/target: "10"
+          autoscaling.knative.dev/target: "1"
       spec:
         containerConcurrency: 1
         timeoutSeconds: 60
 
         containers:
-          - name: user-container
+          - name: app
             image: gcr.io/knative-samples/helloworld-go:latest
             ports:
               - containerPort: 8080
+
             env:
-              - name: ENVIRONMENT
-                value: dev
+              - name: TARGET
+                value: "dev"
+
             resources:
               requests:
-                cpu: 10m
+                cpu: 5m
                 memory: 32Mi
               limits:
                 cpu: 50m
                 memory: 64Mi
-            readinessProbe:
-              httpGet:
-                path: /
-                port: 8080
-              initialDelaySeconds: 0
 
     traffic:
       - latestRevision: true
@@ -49,24 +43,14 @@ serving:
 
     visibility: ""
 
-  route:
-    enabled: false
-
-  configuration:
-    enabled: false
-
 eventing:
   enabled: false
 
 autoscaling:
-  enabled: true
-  minScale: 0
-  maxScale: 1
-  target: 10
-  annotations: {}
+  enabled: false
 
 serviceAccount:
-  create: true
+  create: false
 
 podDisruptionBudget:
   enabled: false
