@@ -1,20 +1,12 @@
 replicas: 1
 
-resources:
-  requests:
-    cpu: 20m
-    memory: 128Mi
-  limits:
-    cpu: 100m
-    memory: 256Mi
+ingress:
+  enabled: false
 
 service:
   enabled: true
-  type: NodePort
-  nodePort: 32000
-
-ingress:
-  enabled: false
+  type: LoadBalancer
+  annotations: {}
 
 managedCertificate:
   enabled: false
@@ -25,7 +17,13 @@ frontendConfig:
 persistence:
   enabled: false
 
-assertNoLeakedSecrets: false
+resources:
+  requests:
+    cpu: 25m
+    memory: 128Mi
+  limits:
+    cpu: 100m
+    memory: 256Mi
 
 adminUser: admin
 adminPassword: admin
@@ -35,5 +33,7 @@ grafana.ini:
     check_for_updates: false
   log:
     mode: console
+  server:
+    root_url: "%(protocol)s://%(domain)s:%(http_port)s/"
 
 plugins: []
