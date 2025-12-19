@@ -16,6 +16,12 @@ service:
 ingress:
   enabled: false
 
+managedCertificate:
+  enabled: false
+
+frontendConfig:
+  enabled: false
+
 persistence:
   enabled: false
 
