@@ -1,35 +1,29 @@
 # Development environment values for Knative chart on GKE
 
-# Namespace for development
 namespace: dev
 
-# Knative Serving Configuration
 serving:
   enabled: true
   
-  # Service configuration
   service:
     enabled: true
     name: knative-service-dev
-    # Service metadata
     labels:
       environment: dev
       team: platform
-    annotations: {}  # keep empty; autoscaling annotations go under template.metadata.annotations
+    annotations: {}  # leave empty; autoscaling annotations go under template.metadata.annotations
 
-    # Service spec
     template:
       metadata:
         labels:
           environment: dev
           version: dev
         annotations:
-          # Development-specific autoscaling annotations
           autoscaling.knative.dev/minScale: "0"
           autoscaling.knative.dev/maxScale: "5"
           autoscaling.knative.dev/target: "50"
       spec:
-        containerConcurrency: 10  # Lower concurrency for dev
+        containerConcurrency: 10
         timeoutSeconds: 300
 
         containers:
@@ -44,13 +38,12 @@ serving:
               - name: LOG_LEVEL
                 value: "debug"
             resources:
-              # Lower resource limits for development
               limits:
-                cpu: 500m
-                memory: 512Mi
-              requests:
-                cpu: 50m
+                cpu: 100m
                 memory: 128Mi
+              requests:
+                cpu: 25m
+                memory: 64Mi
             livenessProbe:
               httpGet:
                 path: /
@@ -61,39 +54,28 @@ serving:
                 path: /
                 port: 8080
               initialDelaySeconds: 0
-    
-    # Traffic configuration
+
     traffic:
       - revisionName: ""
         percent: 100
         latestRevision: true
         tag: ""
     
-    # Visibility configuration - public for dev
-    visibility: ""  # Empty means public
+    visibility: ""  # public for dev
 
-  # Route configuration (optional)
   route:
     enabled: false
 
-  # Configuration (optional)
   configuration:
     enabled: false
 
-# Knative Eventing Configuration (optional for dev)
 eventing:
   enabled: false
-  
-  # Broker configuration
   broker:
     enabled: false
     name: default
-  
-  # Trigger configuration
   trigger:
     enabled: false
-  
-  # Source configurations
   source:
     ping:
       enabled: false
@@ -102,15 +84,13 @@ eventing:
     container:
       enabled: false
 
-# Autoscaling configuration for development (chart-level, not Knative annotations)
 autoscaling:
   enabled: true
-  minScale: 0  # Scale to zero in dev
-  maxScale: 5  # Lower max scale for dev
-  target: 50   # Lower target concurrency for dev
-  annotations: {}  # leave empty; Knative annotations handled above
+  minScale: 0
+  maxScale: 5
+  target: 50
+  annotations: {}  # handled above under template.metadata.annotations
 
-# Service Account
 serviceAccount:
   create: true
   name: ""
@@ -118,10 +98,8 @@ serviceAccount:
   labels:
     environment: dev
 
-# Pod Disruption Budget (disabled for dev)
 podDisruptionBudget:
   enabled: false
 
-# Network Policy (disabled for dev)
 networkPolicy:
   enabled: false
