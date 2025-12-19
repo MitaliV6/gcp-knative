@@ -8,6 +8,12 @@ service:
   type: LoadBalancer
   annotations: {}
 
+managedCertificate:
+  enabled: false
+
+frontendConfig:
+  enabled: false
+
 persistence:
   enabled: false
 
