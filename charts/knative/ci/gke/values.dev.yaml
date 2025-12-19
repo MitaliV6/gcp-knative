@@ -1,54 +1,42 @@
-# Development environment values for Knative chart on GKE
-
 namespace: dev
 
 serving:
   enabled: true
-  
+
   service:
     enabled: true
     name: knative-service-dev
     labels:
       environment: dev
-      team: platform
-    annotations: {}  # leave empty; autoscaling annotations go under template.metadata.annotations
+    annotations: {}
 
     template:
       metadata:
         labels:
           environment: dev
-          version: dev
         annotations:
           autoscaling.knative.dev/minScale: "0"
-          autoscaling.knative.dev/maxScale: "5"
-          autoscaling.knative.dev/target: "50"
+          autoscaling.knative.dev/maxScale: "1"
+          autoscaling.knative.dev/target: "10"
       spec:
-        containerConcurrency: 10
-        timeoutSeconds: 300
+        containerConcurrency: 1
+        timeoutSeconds: 60
 
         containers:
           - name: user-container
             image: gcr.io/knative-samples/helloworld-go:latest
             ports:
               - containerPort: 8080
-                protocol: TCP
             env:
               - name: ENVIRONMENT
-                value: "dev"
-              - name: LOG_LEVEL
-                value: "debug"
+                value: dev
             resources:
-              limits:
-                cpu: 100m
-                memory: 128Mi
               requests:
-                cpu: 25m
+                cpu: 10m
+                memory: 32Mi
+              limits:
+                cpu: 50m
                 memory: 64Mi
-            livenessProbe:
-              httpGet:
-                path: /
-                port: 8080
-              initialDelaySeconds: 0
             readinessProbe:
               httpGet:
                 path: /
@@ -56,12 +44,10 @@ serving:
               initialDelaySeconds: 0
 
     traffic:
-      - revisionName: ""
+      - latestRevision: true
         percent: 100
-        latestRevision: true
-        tag: ""
-    
-    visibility: ""  # public for dev
+
+    visibility: ""
 
   route:
     enabled: false
@@ -71,32 +57,16 @@ serving:
 
 eventing:
   enabled: false
-  broker:
-    enabled: false
-    name: default
-  trigger:
-    enabled: false
-  source:
-    ping:
-      enabled: false
-    apiserver:
-      enabled: false
-    container:
-      enabled: false
 
 autoscaling:
   enabled: true
   minScale: 0
-  maxScale: 5
-  target: 50
-  annotations: {}  # handled above under template.metadata.annotations
+  maxScale: 1
+  target: 10
+  annotations: {}
 
 serviceAccount:
   create: true
-  name: ""
-  annotations: {}
-  labels:
-    environment: dev
 
 podDisruptionBudget:
   enabled: false
