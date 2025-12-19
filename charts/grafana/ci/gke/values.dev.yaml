@@ -1,14 +1,10 @@
 ingress:
-  enabled: true
-  hosts:
-    - "YOURDOMAIN.com"
+  enabled: false
+  # Ingress disabled - using LoadBalancer service instead
+  hosts: []
   pathType: Prefix
   path: /
-  annotations:
-    kubernetes.io/ingress.class: "gce"
-    kubernetes.io/ingress.allow-http: "true"
-    networking.gke.io/managed-certificates: "grafana-staging"
-    networking.gke.io/v1beta1.FrontendConfig: grafana-staging
+  annotations: {}
 
 replicas: 1
 
@@ -25,19 +21,19 @@ resources:
     cpu: 100m
     memory: 512Mi
 
-# Define FrontendConfig for Ingress
+# Define FrontendConfig for Ingress (disabled)
 frontendConfig:
-  enabled: true
-  name: grafana-staging
+  enabled: false
 
-# Define mcrt for gcp Ingress
+# Define mcrt for gcp Ingress (disabled)
 managedCertificate:
-  enabled: true
-  name: grafana-staging
-  domains:
-    - YOURDOMAIN.com
+  enabled: false
+
 service:
-  type: NodePort
+  enabled: true
+  type: LoadBalancer
+  # LoadBalancer will get an external IP from GCP
+  annotations: {}
 
 useStatefulSet: false
 
@@ -51,7 +47,7 @@ dashboards: {}
 
 # Administrator credentials when not using an existing secret (see below)
 adminUser: admin
-adminPassword: jO7ysCLXJoP024v835X
+adminPassword: jO7ysCLXJoP024v8
 
 grafana.ini:
   paths:
@@ -64,10 +60,11 @@ grafana.ini:
   log:
     mode: console
   grafana_net:
-    url: YOURDOMAIN.com
+    url: ""
   server:
-    root_url: https://YOURDOMAIN.com/
-    domain: "{{ if (and .Values.ingress.enabled .Values.ingress.hosts) }}{{ tpl (.Values.ingress.hosts | first) . }}{{ else }}''{{ end }}"
+    # root_url will be set automatically based on LoadBalancer IP
+    root_url: "%(protocol)s://%(domain)s:%(http_port)s/"
+    domain: ""
   auth.google:
     enabled : true
     allow_sign_up : true
