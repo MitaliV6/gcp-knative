@@ -10,8 +10,6 @@ replicas: 1
 
 assertNoLeakedSecrets: false
 
-nodeSelector:
-  machine-type: c3-standard-8
   
 resources: 
   limits:
@@ -38,7 +36,7 @@ service:
 useStatefulSet: false
 
 persistence:
-  enabled: true
+  enabled: false
   size: 10Gi
   accessModes:
     - ReadWriteOnce
