@@ -10,7 +10,7 @@ spec:
   project: default
   source:
     path: charts/knative
-    repoURL: https://github.com/your-org/your-repo.git  # Update with your repo URL
+    repoURL: https://github.com/MitaliV6/gcp-knative.git
     targetRevision: main
     helm:
       valueFiles:
